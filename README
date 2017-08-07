@@ -1,4 +1,11 @@
-Lingua::Awkwords - randomly generates words from a given pattern
+Lingua::Awkwords - randomly generates outputs from a given pattern
+
+This is a Perl implementation of
+
+http://akana.conlang.org/tools/awkwords/
+
+though is not an exact replica of that parser.
+
 
 To install this module, use CPAN, for example:
 

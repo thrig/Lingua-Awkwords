@@ -1,8 +1,6 @@
-use 5.010000;
-
 use strict;
 use warnings;
-use ExtUtils::MakeMaker;
+use ExtUtils::MakeMaker 6.48;
 
 # long since stolen from mauke/Dir-Self
 sub merge_key_into {
@@ -12,9 +10,11 @@ sub merge_key_into {
 
 my %params = (
     NAME         => 'Lingua::Awkwords',
-    ABSTRACT     => 'randomly generates words from a given pattern',
+    ABSTRACT     => 'randomly generates output from a given pattern',
     AUTHOR       => 'Jeremy Mates <jmates@cpan.org>',
     VERSION_FROM => 'lib/Lingua/Awkwords.pm',
+
+    MIN_PERL_VERSION => '5.14.0',
 
     LICENSE  => 'bsd',
     PL_FILES => {},

@@ -1,7 +1,6 @@
 # -*- Perl -*-
 #
-# a string object (mostly so ->render can recurse through either ::Set
-# or these here terminal ::String objects)
+# a string object (mostly so ->render can recurse through the parse tree)
 
 package Lingua::Awkwords::String;
 
@@ -76,7 +75,7 @@ None at this time.
 
 =head1 SEE ALSO
 
-L<Lingua::Awkwords>, L<Lingua::Awkwords::Set>
+L<Lingua::Awkwords>, L<Lingua::Awkwords::Parser>
 
 =head1 AUTHOR
 
