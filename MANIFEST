@@ -1,0 +1,13 @@
+Changes
+LICENSE
+MANIFEST
+Makefile.PL
+README
+lib/Lingua/Awkwords.pm
+lib/Lingua/Awkwords/Set.pm
+lib/Lingua/Awkwords/String.pm
+t/00-load.t
+t/10-string.t
+t/11-set.t
+t/pod-coverage.t
+t/pod.t
