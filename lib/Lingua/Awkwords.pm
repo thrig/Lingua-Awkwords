@@ -117,7 +117,7 @@ may be specified.
 
 =item I<A-Z>
 
-Captial ASCII letters denote subpatterns; several of these are set by
+Capital ASCII letters denote subpatterns; several of these are set by
 default. See L<Lingua::Awkwords::Subpattern> for how to customize them.
 C<V> for example is by default equivalent to the more verbose C<[a/i/u]>.
 
@@ -156,7 +156,7 @@ Where the parse tree is stored.
 
 =item I<new>
 
-Constuctor. Typically this should be passed a I<pattern> argument.
+Constructor. Typically this should be passed a I<pattern> argument.
 
 =item I<render>
 
@@ -179,9 +179,9 @@ L<https://github.com/thrig/Lingua-Awkwords>
 
 =head2 Known Issues
 
-There are various incompatiblies with the original version of the code;
-these are detailed in the parser module as they concern how e.g. weights
-are parsed.
+There are various incompatibilities with the original version of the
+code; these are detailed in the parser module as they concern how e.g.
+weights are parsed.
 
 =head1 SEE ALSO
 

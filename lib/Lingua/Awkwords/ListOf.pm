@@ -63,7 +63,7 @@ other code.
 
 Container object for a list of items; upon B<render> these items will
 each have B<render> call on them and that concatenated result (minus
-anything exluded by filters) will be returned as a string.
+anything excluded by filters) will be returned as a string.
 
 =head1 ATTRIBUTES
 

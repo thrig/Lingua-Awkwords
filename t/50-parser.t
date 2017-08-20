@@ -69,7 +69,7 @@ my $ret;
 }
 
 # whitespace only preserved within "quoted strings", including leading
-# whitespace within those quotes, which rquired some fiddling with
+# whitespace within those quotes. this required some fiddling with
 # Parser::MGC to get right
 {
     $ret = $parser->from_string(q{ ghi });
