@@ -64,7 +64,7 @@ Lingua::Awkwords - randomly generates outputs from a given pattern
       (CV*2)^ji^ti^wo^wu
       [CV/*2]^ji^ti^wo^wu
       [n/*5]
-  }
+  });
 
   say $la->render for 1..10;
 

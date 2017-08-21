@@ -4,7 +4,7 @@
 
 package Lingua::Awkwords::Parser;
 
-use 5.12.0;
+use strict;
 use warnings;
 use Lingua::Awkwords::ListOf;
 use Lingua::Awkwords::OneOf;
