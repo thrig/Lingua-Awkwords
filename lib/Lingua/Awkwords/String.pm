@@ -9,11 +9,17 @@ use warnings;
 use Moo;
 use namespace::clean;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 has string => ( is => 'ro' );
 
 sub render { $_[0]->string // '' }
+
+sub walk {
+    my ($self, $callback) = @_;
+    $callback->($self);
+    return;
+}
 
 1;
 __END__
@@ -44,16 +50,20 @@ Where the string should be stored.
 
 =over 4
 
-=item I<new>
+=item B<new>
 
 Constructor. May and probably should be passed the B<string> attribute
 to set the string.
 
-=item I<render>
+=item B<render>
 
 Returns the string, or the empty string if the B<string> has not been
 set. This will typically be called from L<Lingua::Awkwords::Set> as part
 of a higher-level B<render> call on a parse tree.
+
+=item B<walk> I<callback>
+
+Calls the I<callback> function with itself as the argument.
 
 =back
 

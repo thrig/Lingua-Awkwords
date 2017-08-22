@@ -6,14 +6,15 @@ package Lingua::Awkwords::Parser;
 
 use strict;
 use warnings;
+
+use base qw( Parser::MGC );
+
 use Lingua::Awkwords::ListOf;
 use Lingua::Awkwords::OneOf;
 use Lingua::Awkwords::String;
 use Lingua::Awkwords::Subpattern;
 
-use base qw( Parser::MGC );
-
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub parse {
     my $self = shift;
@@ -212,7 +213,7 @@ under the C<t/> directory of the distribution of this module.
 
 =over 4
 
-=item I<parse>
+=item B<parse>
 
 Entry point for L<Parser::MGC>; returns the parsed pattern or fails
 trying. Code that uses this module will likely instead use the B<new>,

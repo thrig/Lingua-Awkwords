@@ -22,4 +22,7 @@ is( $listof->render, 'fbarf' );
 $listof->add_filters( 'f', 'b' );
 is( $listof->render, 'ar' );
 
-plan tests => 4;
+$listof->filter_with('X');
+is( $listof->render, 'XXXarXX' );
+
+plan tests => 5;

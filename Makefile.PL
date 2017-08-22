@@ -29,6 +29,7 @@ my %params = (
         'lib'        => 0,
     },
     PREREQ_PM => {
+        'Carp'                   => 0,
         'Math::Random::Discrete' => 0,
         'Moo'                    => 0,
         'namespace::clean'       => 0,

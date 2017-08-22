@@ -1,3 +1,8 @@
 See also the git repository.
 
+ * 0.02 - Subpattern calls ->render on objects; this allows subpatterns
+   to be not just simple strings. croak/confess instead of die
+   especially if deep in some ->render or ->walk tree. Add ->walk so
+   the parse tree can be walked through with (and possibly modified by)
+   a callback.
  * 0.01 - released on a mostly unsuspecting world.

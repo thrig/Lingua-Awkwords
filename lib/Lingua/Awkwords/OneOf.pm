@@ -7,17 +7,23 @@ package Lingua::Awkwords::OneOf;
 
 use strict;
 use warnings;
+
+use Carp qw(croak confess);
 use Math::Random::Discrete;
 use Moo;
 use namespace::clean;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 my $DEFAULT_WEIGHT = 1;
 
 has filters => (
     is      => 'rwp',
     default => sub { [] },
+);
+has filter_with => (
+    is      => 'rw',
+    default => sub { '' },
 );
 has terms => (
     is      => 'rwp',
@@ -34,7 +40,7 @@ has weights => (
 # METHODS
 
 sub add_choice {
-    die "add_choice requires a value" if @_ < 2;
+    croak "add_choice requires a value" if @_ < 2;
     my ( $self, $value, $weight ) = @_;
     push @{ $self->terms }, $value;
     push @{ $self->weights }, $weight // $DEFAULT_WEIGHT;
@@ -52,7 +58,7 @@ sub render {
     if ( !@$terms ) {
         # in theory this shouldn't happen. could also instead set the
         # empty string here...
-        die "no choices to pick from";
+        confess "no choices to pick from";
     } elsif ( @$terms == 1 ) {
         $str = $terms->[0]->render;
     } else {
@@ -64,10 +70,20 @@ sub render {
         $str = $picker->rand->render;
     }
 
+    my $filter_with = $self->filter_with // '';
     for my $filter ( @{ $self->filters } ) {
-        $str =~ s/\Q$filter//g;
+        $str =~ s/\Q$filter/$filter_with/g;
     }
     return $str;
+}
+
+sub walk {
+    my ($self, $callback) = @_;
+    $callback->($self);
+    for my $term ( @{ $self->terms } ) {
+        $term->walk($callback);
+    }
+    return;
 }
 
 1;
@@ -97,6 +113,10 @@ returns will be returned, minus whatever any filters may remove.
 
 List of filters, if any. Use B<add_filters> to set these.
 
+=item I<filter_with>
+
+String to replaced filtered values with, the empty string by default.
+
 =item I<picker>
 
 Where the L<Math::Random::Discrete> object to provide weighted random
@@ -116,30 +136,35 @@ List of weights for each of the choices.
 
 =over 4
 
-=item I<add_choice> I<value> I<weight>
+=item B<add_choice> I<value> I<weight>
 
 Adds the given I<value> and its I<weight> to the choices.
 
-=item I<add_filters> I<filter> ..
+=item B<add_filters> I<filter> ..
 
 Adds one or more strings as a filter for the B<render> phase. These
 limit what a unit can generate, e.g. C<[x/y/z]^x> would replace a result
 of C<x> with the empty string.
 
-=item I<clear_picker>
+=item B<clear_picker>
 
 This is used by the B<add> method to invalidate the picker object; call
 this method if you have manually fiddled with the I<alts> or I<weights>
 after making a B<render> call.
 
-=item I<new>
+=item B<new>
 
 Constructor.
 
-=item I<render>
+=item B<render>
 
 Picks a random choice and in turn calls B<render> on that, then applies
 any filters present on that result.
+
+=item B<walk> I<callback>
+
+Calls the I<callback> function with itself as the argument, then calls
+B<walk> on all of the available choices.
 
 =back
 

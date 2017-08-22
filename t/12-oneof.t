@@ -26,6 +26,10 @@ is( $oneof->render, 'lah' );
 $oneof->add_filters(qw/l a/);
 is( $oneof->render, 'h' );
 
+$oneof->filter_with('qq');
+is( $oneof->render, 'qqqqqqh' );
+$oneof->filter_with('');
+
 $oneof->add_choice( $strings[1], 3 );
 
 # thanks to the filters and weight, this should produce only 'h' or 'i'
@@ -39,4 +43,4 @@ $deeply->( [ sort keys %results ], [qw/h i/] );
 diag( "srand seed " . srand );
 ok( $results{i} > 200 && $results{i} < 250, '3:1 odds within tolerance' );
 
-plan tests => 6;
+plan tests => 7;

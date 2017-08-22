@@ -7,14 +7,19 @@ package Lingua::Awkwords::ListOf;
 
 use strict;
 use warnings;
+
 use Moo;
 use namespace::clean;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 has filters => (
     is      => 'rwp',
     default => sub { [] },
+);
+has filter_with => (
+    is      => 'rw',
+    default => sub { '' },
 );
 has terms => (
     is      => 'rwp',
@@ -40,10 +45,20 @@ sub render {
     for my $term ( @{ $self->terms } ) {
         $str .= $term->render;
     }
+    my $filter_with = $self->filter_with // '';
     for my $filter ( @{ $self->filters } ) {
-        $str =~ s/\Q$filter//g;
+        $str =~ s/\Q$filter/$filter_with/g;
     }
     return $str;
+}
+
+sub walk {
+    my ($self, $callback) = @_;
+    $callback->($self);
+    for my $term ( @{ $self->terms } ) {
+        $term->walk($callback);
+    }
+    return;
 }
 
 1;
@@ -73,6 +88,10 @@ anything excluded by filters) will be returned as a string.
 
 List of filters, if any.
 
+=item I<filter_with>
+
+String to replaced filtered values with, the empty string by default.
+
 =item I<terms>
 
 Items of the list are held here as an array reference.
@@ -83,24 +102,29 @@ Items of the list are held here as an array reference.
 
 =over 4
 
-=item I<add> I<value> I<weight>
+=item B<add> I<value> ..
 
-Adds the given I<value> and its I<weight> to the choices.
+Adds the given list of I<value> to the I<terms>.
 
-=item I<add_filters> I<filter> ..
+=item B<add_filters> I<filter> ..
 
 Adds one or more strings as a filter for the B<render> phase. These
 limit what a unit can generate e.g. to remove repeated vowels from a
 C<[VV]> pattern via C<[VV]^aa>.
 
-=item I<new>
+=item B<new>
 
 Constructor.
 
-=item I<render>
+=item B<render>
 
 Calls B<render> on turn on each item in the I<terms> list, joins those
 results together, applies any filters, and returns that string result.
+
+=item B<walk> I<callback>
+
+Calls the I<callback> function with itself as the argument, then calls
+B<walk> on all of the available I<terms>.
 
 =back
 

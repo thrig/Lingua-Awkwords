@@ -7,11 +7,12 @@ package Lingua::Awkwords;
 use strict;
 use warnings;
 
+use Carp qw(croak);
 use Lingua::Awkwords::Parser;
 use Moo;
 use namespace::clean;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 has pattern => (
     is      => 'rw',
@@ -24,13 +25,30 @@ has tree => ( is => 'rwp' );
 
 ########################################################################
 #
-# though this be madness, yet there is a METHOD in't
+# METHODS
+
+# avoids need to say
+#   use Lingua::Awkwords::Parser;
+#   ... = Lingua::Awkwords::Parser->new->from_string(q{ ...
+# in the calling code
+sub parse_string {
+    my ($self_or_class, $str) = @_;
+    return Lingua::Awkwords::Parser->new->from_string( $str );
+}
 
 sub render {
-    my $self = shift;
+    my ($self) = @_;
     my $tree = $self->tree;
-    die "no pattern supplied" if !defined $tree;
+    croak "no pattern supplied" if !defined $tree;
     return $tree->render;
+}
+
+sub walk {
+    my ($self, $callback) = @_;
+    my $tree = $self->tree;
+    croak "no pattern supplied" if !defined $tree;
+    $tree->walk($callback);
+    return;
 }
 
 1;
@@ -154,16 +172,58 @@ Where the parse tree is stored.
 
 =over 4
 
-=item I<new>
+=item B<new>
 
 Constructor. Typically this should be passed a I<pattern> argument.
 
-=item I<render>
+=item B<parse_string> I<pattern>
+
+Returns the parse tree of the given I<pattern> without setting the I<tree>
+attribute. L</COMPLICATIONS> shows one use for this.
+
+=item B<render>
 
 Returns a string render of the awkword I<pattern>. This may be the empty
 string if filters have removed all the text.
 
+=item B<walk> I<callback>
+
+Provides a means to recurse through the parse tree, where every object
+in the tree will call the I<callback> with C<$self> as the sole
+argument, and then if necessary iterate through all of the possibilities
+contained by itself calling B<walk> on each of those.
+
 =back
+
+=head1 COMPLICATIONS
+
+More complicated structures can be built by attaching parse trees to
+subpatterns. For example, Toki Pona could be extended to allow optional
+diphthongs (mostly in the second syllable) via
+
+  use feature qw(say);
+  use Lingua::Awkwords::Subpattern;
+  use Lingua::Awkwords;
+  
+  my $cv  = Lingua::Awkwords->parse_string(q{
+      CV^ji^ti^wo^wu
+  }); 
+  my $cvv = Lingua::Awkwords->parse_string(q{
+      CVV^ji^ti^wo^wu
+  });
+
+  Lingua::Awkwords::Subpattern->set_patterns(
+      A => $cv,
+      B => $cvv,
+      C => [qw/j k l m n p s t w/],
+      V => [qw/a e i o u/],
+  );
+
+  my $tree = Lingua::Awkwords->new( pattern => q{
+      [ a[B/BA/BAA/A/AA/AAA] / [AB/ABA/ABAA/A/AA/AAA] ] [n/*5]
+  });
+
+  say join ' ', map { $tree->render } 1 .. 10;
 
 =head1 BUGS
 
@@ -183,9 +243,14 @@ There are various incompatibilities with the original version of the
 code; these are detailed in the parser module as they concern how e.g.
 weights are parsed.
 
+See also the "Known Issues" section in all the other modules in this
+distribution.
+
 =head1 SEE ALSO
 
-L<Lingua::Awkwords::Parser>
+L<Lingua::Awkwords::ListOf>, L<Lingua::Awkwords::OneOf>,
+L<Lingua::Awkwords::Parser>, L<Lingua::Awkwords::String>,
+L<Lingua::Awkwords::Subpattern>
 
 =head1 AUTHOR
 
