@@ -12,7 +12,7 @@ use Lingua::Awkwords::Parser;
 use Moo;
 use namespace::clean;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 has pattern => (
     is      => 'rw',
@@ -209,7 +209,7 @@ diphthongs (mostly in the second syllable) via
       CV^ji^ti^wo^wu
   }); 
   my $cvv = Lingua::Awkwords->parse_string(q{
-      CVV^ji^ti^wo^wu
+      CVV^ji^ti^wo^wu^aa^ee^ii^oo^uu
   });
 
   Lingua::Awkwords::Subpattern->set_patterns(
@@ -224,6 +224,34 @@ diphthongs (mostly in the second syllable) via
   });
 
   say join ' ', map { $tree->render } 1 .. 10;
+
+The default filter of the empty string can be problematical, as one may
+not know whether a filter has been applied to the result, or the word
+may be filtered into an incorrect form. The above trees with filters can
+be modified as follows
+
+  $tree->walk( set_filter('X') );
+
+  # more or less the equivalent of a let-over-lambda in LISP
+  sub set_filter {
+      my $filter = shift;
+      return sub {
+          my $self = shift;
+          $self->filter_with($filter) if $self->can('filter_with');
+      };
+  }
+
+to instead replace filtered values with C<X> and then enough words
+generated minus those filtered via
+
+  my @words;
+  while (1) {
+      my $possible = $tree->render;
+      next if $possible =~ m/X/;
+      push @words, $possible;
+      last if @words >= 10;
+  }
+  say join ' ', @words;
 
 =head1 BUGS
 

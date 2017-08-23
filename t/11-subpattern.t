@@ -26,10 +26,18 @@ is( $picker->render, 'x' );
 # ref form
 isa_ok( Lingua::Awkwords::Subpattern->update_pattern( X => ['y'] ),
     'Lingua::Awkwords::Subpattern' );
+
+# prior to 0.03 the target would be looked up from patterns on each call
+# so would differ following an update_pattern or set_patterns call; in
+# 0.03 and onwards expect the original
+is( $picker->render, 'x' );
+$picker = Lingua::Awkwords::Subpattern->new( pattern => 'X' );
 is( $picker->render, 'y' );
 
 # list form
 Lingua::Awkwords::Subpattern->update_pattern( X => 'z' );
+is( $picker->render, 'y' );
+$picker = Lingua::Awkwords::Subpattern->new( pattern => 'X' );
 is( $picker->render, 'z' );
 
 # this is certainly not a new or dare I say Neo test...
@@ -50,4 +58,4 @@ Lingua::Awkwords::Subpattern->update_pattern( P => $pattern );
 $picker = Lingua::Awkwords::Subpattern->new( pattern => 'P' );
 is( $picker->render, 'pattern' );
 
-plan tests => 12;
+plan tests => 14;
