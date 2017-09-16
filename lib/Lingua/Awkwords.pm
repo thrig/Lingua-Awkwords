@@ -253,6 +253,17 @@ word may be filtered into an incorrect form. Consult the C<eg/>
 directory of this module's distribution for example code that
 customizes the filter value.
 
+Code that makes use of non-ASCII encodings may need appropriate settings
+made, e.g. to use the locale for input and output and to allow UTF-8 in
+the program text.
+
+  use open IO  => ':locale';
+  use utf8;
+
+  Lingua::Awkwords::Subpattern->set_patterns(
+      S => [qw/... UTF-8 data here .../],
+  );
+
 =head1 BUGS
 
 =head2 Reporting Bugs
