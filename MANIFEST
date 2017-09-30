@@ -19,5 +19,6 @@ t/12-oneof.t
 t/50-parser.t
 t/90-awkwords.t
 t/README
+t/phrase
 t/pod-coverage.t
 t/pod.t
