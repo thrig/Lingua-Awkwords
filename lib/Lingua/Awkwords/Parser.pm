@@ -7,7 +7,7 @@ package Lingua::Awkwords::Parser;
 use strict;
 use warnings;
 
-use base qw( Parser::MGC );
+use parent qw( Parser::MGC );
 
 use Lingua::Awkwords::ListOf;
 use Lingua::Awkwords::OneOf;
