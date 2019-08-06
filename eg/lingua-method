@@ -5,9 +5,13 @@
 # probably needs to better deconstruct at the syllable level for better
 # results there?
 #
-#   ... | ./lingua-method > new
-#   # (edit new here as necessary)
-#   perl new
+#   ... | ./lingua-method > makewords
+#   # (edit makewords code here as necessary)
+#   perl makewords 10
+#
+# there are various things to TWEAK in this code. the input words will
+# likely need to be cleaned up (lower case the input, cleanup or remove
+# contractions, etc)
 
 use 5.24.0;
 use warnings;
@@ -16,16 +20,20 @@ my (%letters, %pattern, @plist, %ptypes, %tally, %gtally);
 
 while (readline) {
     chomp;
-    for my $word (split ' ') {
-        parse_word($word);
+    foreach my $word (split ' ') {
+        parse_word(
+            $word,
+            vowels     => qr/[aeiou]+/,
+            consonants => qr/[bcdfghjklmnpqrstvwxyz]+/
+        );
     }
 }
 
-patternize(\%pattern);
+patternize(\%pattern, '', 0);
 
-for my $type (keys %ptypes) {
+foreach my $type (keys %ptypes) {
     # TWEAK this here weight as necessary
-    $letters{$type} = join '/', letter_weights($type, weight => 4);
+    $letters{$type} = join '/', letter_weights($type, weight => 5);
 }
 
 print <<"HEADER";
@@ -49,7 +57,7 @@ print <<"FOOTER";
 # AB VC YZ are the subpatterns for beginning, middle, tail bits
 my \$tree = Lingua::Awkwords->new( pattern => q{ @plist } );
 
-for (1..20) {
+foreach (1..(shift // 20)) {
     say \$tree->render;
 }
 
@@ -61,19 +69,15 @@ sub deconstruct {
     my @form;
   LEX: {
         last LEX if $s =~ m/\G$/cg;    # end of string
-        if ($s =~ m/\G ($param{consonants}$param{vowels}$param{consonants}) $ /cgx) {
-            push @form, [ 'C', $1 ];
-            redo LEX;
-        }
-        if ($s =~ m/\G ($param{vowels}$param{consonants}) $ /cgx) {
-            push @form, [ 'V', $1 ];
-            redo LEX;
-        }
         if ($s =~ m/\G ($param{vowels}) /cgx) {
             push @form, [ 'V', $1 ];
             redo LEX;
         }
         if ($s =~ m/\G ($param{consonants}$param{vowels}) /cgx) {
+            push @form, [ 'S', $1 ];
+            redo LEX;
+        }
+        if ($s =~ m/\G ($param{consonants}) /cgx) {
             push @form, [ 'C', $1 ];
             redo LEX;
         }
@@ -87,15 +91,18 @@ sub deconstruct {
 # the input
 sub letter_weights {
     my ($type, %param) = @_;
-    my $gt = $type =~ tr/ABYZ/VCVC/r;
+    # TWEAK need a mapping here of all specialized head/tail subpatterns
+    # back to their original global type (this, desonstruct, and
+    # parse_word must all agree)
+    my $gt = $type =~ tr/ABYZDX/VCVCSS/r;
     my @choices;
-    for my $key (keys $tally{$type}->%*) {
+    while (my ($letter, $weight) = each $tally{$type}->%*) {
         push @choices,
-          $key . '*' . ($tally{$type}{$key} * $param{weight} + $gtally{$gt}{$key});
+          $letter . '*' . ($weight * $param{weight} + $gtally{$gt}{$letter});
     }
-    for my $key (keys $gtally{$gt}->%*) {
-        next if exists $tally{$type}{$key};
-        push @choices, $key . '*' . $gtally{$gt}{$key};
+    while (my ($letter, $weight) = each $tally{$gt}->%*) {
+        next if exists $tally{$type}{$letter};
+        push @choices, $letter . '*' . $weight;
     }
     return @choices;
 }
@@ -103,21 +110,17 @@ sub letter_weights {
 # TWEAK you may want a different parsage in which case different code
 # will be required
 sub parse_word {
-    my ($s) = @_;
-    my @forms = deconstruct(
-        $s,
-        vowels     => qr/[aeiou]+/,
-        consonants => qr/[bcdfghjklmnpqrstvwxyz]+/
-    );
+    my ($s, %param) = @_;
+    my @forms = deconstruct($s, %param);
     return if !@forms;
-    for my $f (@forms) {
+    foreach my $f (@forms) {
         $gtally{ $f->[0] }{ $f->[1] }++;
     }
     # beginnings and endings are important? well they are here
-    $forms[0][0]  =~ tr/VC/AB/;
-    $forms[-1][0] =~ tr/VC/YZ/;
+    $forms[0][0]  =~ tr/VCS/ABD/;
+    $forms[-1][0] =~ tr/VCS/YZX/;
     my $p = \%pattern;
-    for my $f (@forms) {
+    foreach my $f (@forms) {
         $tally{ $f->[0] }{ $f->[1] }++;
         # build the tree used by patternize to figure out all the
         # different large scale word forms (e.g. CVC or VC) (which means
@@ -132,14 +135,12 @@ sub parse_word {
 # recurse through built pattern tree and populate pattern list
 sub patternize {
     my ($p, $str, $sum) = @_;
-    $str //= '';
-    $sum //= 0;
     if (!$p->%*) {
-        push @plist, "$str*$sum";
+        push @plist, "$str*$sum" if $sum;
         return;
     }
-    for my $key (keys $p->%*) {
-        $ptypes{$key} = 1;
-        patternize($p->{$key}[1], $str . $key, $sum + $p->{$key}[0]);
+    while (my ($form, $attr) = each $p->%*) {
+        $ptypes{$form} = 1;
+        patternize($attr->[1], $str . $form, $sum + $attr->[0]);
     }
 }
