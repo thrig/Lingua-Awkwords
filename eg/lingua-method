@@ -6,9 +6,10 @@
 # results there?
 #
 #   ... | ./lingua-method > new
+#   # (edit new here as necessary)
 #   perl new
 
-use 5.28.0;
+use 5.24.0;
 use warnings;
 
 my (%letters, %pattern, @plist, %ptypes, %tally, %gtally);
@@ -24,12 +25,12 @@ patternize(\%pattern);
 
 for my $type (keys %ptypes) {
     # TWEAK this here weight as necessary
-    $letters{$type} = join '/', letter_weights($type, weight => 20);
+    $letters{$type} = join '/', letter_weights($type, weight => 4);
 }
 
 print <<"HEADER";
 #!/usr/bin/env perl
-use 5.28.0;
+use 5.24.0;
 use warnings;
 use Lingua::Awkwords::Subpattern;
 use Lingua::Awkwords;
@@ -45,6 +46,7 @@ local $" = '/';
 print <<"FOOTER";
 );
 
+# AB VC YZ are the subpatterns for beginning, middle, tail bits
 my \$tree = Lingua::Awkwords->new( pattern => q{ @plist } );
 
 for (1..20) {
@@ -59,11 +61,19 @@ sub deconstruct {
     my @form;
   LEX: {
         last LEX if $s =~ m/\G$/cg;    # end of string
+        if ($s =~ m/\G ($param{consonants}$param{vowels}$param{consonants}) $ /cgx) {
+            push @form, [ 'C', $1 ];
+            redo LEX;
+        }
+        if ($s =~ m/\G ($param{vowels}$param{consonants}) $ /cgx) {
+            push @form, [ 'V', $1 ];
+            redo LEX;
+        }
         if ($s =~ m/\G ($param{vowels}) /cgx) {
             push @form, [ 'V', $1 ];
             redo LEX;
         }
-        if ($s =~ m/\G ($param{consonants}) /cgx) {
+        if ($s =~ m/\G ($param{consonants}$param{vowels}) /cgx) {
             push @form, [ 'C', $1 ];
             redo LEX;
         }
@@ -112,21 +122,24 @@ sub parse_word {
         # build the tree used by patternize to figure out all the
         # different large scale word forms (e.g. CVC or VC) (which means
         # this tool only generates words using those same forms, though
-        # with the letters there in randomized)
-        $p = $p->{ $f->[0] } //= {};
+        # with the letters there in randomized. edit the generated code
+        # to adjust the patterns generated)
+        $p->{ $f->[0] }[0]++;
+        $p = $p->{ $f->[0] }[1] //= {};
     }
 }
 
 # recurse through built pattern tree and populate pattern list
 sub patternize {
-    my ($p, $s) = @_;
-    $s //= '';
+    my ($p, $str, $sum) = @_;
+    $str //= '';
+    $sum //= 0;
     if (!$p->%*) {
-        push @plist, $s;
+        push @plist, "$str*$sum";
         return;
     }
     for my $key (keys $p->%*) {
         $ptypes{$key} = 1;
-        patternize($p->{$key}, $s . $key);
+        patternize($p->{$key}[1], $str . $key, $sum + $p->{$key}[0]);
     }
 }
