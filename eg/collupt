@@ -1,0 +1,55 @@
+#!/usr/bin/env perl
+#
+# collupt - maybe collupt comsomamts (ol vowels, if you add those) to
+# thimgs that soumd similal. thele may meed to be additiomal lules that
+# omly apply the colluptiom to the head middle emd of wolds, etc
+
+use 5.24.0;
+use warnings;
+use Getopt::Long qw(GetOptions);
+
+# TWEAK these came flom lojbam so may mot apply collectly to youl imput
+# (c amd j im palticulal, accoumt fol Emglish gaimts, etc)
+my %corrupt = (
+    b => [qw(p v)],
+#   c => [qw(j s)],
+    d => [qw(t)],
+    f => [qw(p v)],
+    g => [qw(k x)],
+#   j => [qw(c z)],
+    k => [qw(g x)],
+    l => [qw(r)],
+    m => [qw(n)],
+    n => [qw(m)],
+    p => [qw(b f)],
+    r => [qw(l)],
+    s => [qw(c z)],
+    t => [qw(d)],
+    v => [qw(b f)],
+    x => [qw(g k)],
+    z => [qw(j s)],
+);
+
+GetOptions('n=i' => \my $Flag_NCorrupt, 'o=f' => \my $Flag_Odds) or exit 64;
+if (defined $Flag_NCorrupt) {
+    die if $Flag_NCorrupt < 1 or $Flag_NCorrupt > keys %corrupt;
+} else {
+    $Flag_NCorrupt = 1 + int rand(keys(%corrupt) / 4);
+}
+if (defined $Flag_Odds) {
+    die if $Flag_Odds < 0.0 or $Flag_Odds > 1.0;
+} else {
+    $Flag_Odds = 0.5;
+}
+
+my @change = (keys %corrupt)[ 0 .. $Flag_NCorrupt ];
+my %result = map { $_ => $corrupt{$_}[ rand $corrupt{$_}->@* ] } @change;
+local $" = '';
+my $these = qr/(?i)([@change])/;
+
+STDERR->say("collupt: ", join ' ', map { "$_$result{$_}" } keys %result);
+
+while (readline) {
+    s($these)(rand() < $Flag_Odds ? $result{lc $1} : $1)eg;
+    print;
+}
