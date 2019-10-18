@@ -2,6 +2,8 @@ Build.PL
 Changes
 LICENSE
 MANIFEST
+META.json
+META.yml
 README
 eg/README
 eg/athshean
